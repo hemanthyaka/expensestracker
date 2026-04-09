@@ -1,27 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html { color-scheme: dark; }
+
+  body {
+    background-color: #07070e;
+    color: #f1f5f9;
+    font-family: 'Lexend', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Dot-grid background texture */
+    background-image: radial-gradient(circle at 20% 10%, rgba(139,92,246,0.06) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 90%, rgba(16,185,129,0.04) 0%, transparent 50%),
+                      radial-gradient(#1c1c30 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 28px 28px;
+    background-attachment: fixed;
+    min-height: 100vh;
   }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #252540; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3d4460; }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Gradient border card effect */
+  .card-border {
+    position: relative;
+    background: #10101e;
+    border-radius: 16px;
+  }
+  .card-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.25) 0%, rgba(28,28,48,0.8) 50%, rgba(16,185,129,0.1) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Number display — always monospace */
+  .num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  /* Glow on violet elements */
+  .violet-glow {
+    box-shadow: 0 0 24px rgba(139,92,246,0.3), 0 0 48px rgba(139,92,246,0.1);
+  }
+
+  /* Page fade-up — all pages apply this */
+  .page-enter {
+    opacity: 0;
+    animation: fade-up 0.35s ease forwards;
+  }
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+  .text-balance { text-wrap: balance; }
 }
