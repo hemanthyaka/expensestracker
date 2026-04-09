@@ -45,6 +45,14 @@ export function setAuthCookie(response: NextResponse, token: string): void {
   })
 }
 
+// Read the user identity set by middleware (already JWT-verified)
+export function getUserFromHeaders(request: Request): { userId: number; role: 'ADMIN' | 'USER' } | null {
+  const userId = parseInt(request.headers.get('x-user-id') ?? '')
+  const role   = request.headers.get('x-user-role') as 'ADMIN' | 'USER' | null
+  if (isNaN(userId) || !role) return null
+  return { userId, role }
+}
+
 export function clearAuthCookie(response: NextResponse): void {
   response.cookies.set(COOKIE_NAME, '', {
     httpOnly: true,

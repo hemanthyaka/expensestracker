@@ -6,7 +6,7 @@ export type Category = { id: number; name: string; color: string; icon: string; 
 export function useCategories() {
   return useQuery<Category[]>({
     queryKey: ['categories'],
-    queryFn:  () => fetch('/api/categories').then((r) => r.json()),
+    queryFn:  () => fetch('/api/categories').then((r) => r.json()).then((d) => Array.isArray(d) ? d : []),
   })
 }
 

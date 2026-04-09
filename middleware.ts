@@ -43,10 +43,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  const response = NextResponse.next()
-  response.headers.set('x-user-id',   String(session.userId))
-  response.headers.set('x-user-role', session.role)
-  return response
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-user-id',   String(session.userId))
+  requestHeaders.set('x-user-role', session.role)
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {

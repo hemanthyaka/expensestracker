@@ -9,16 +9,22 @@ datasource db {
 
 model Category {
   id        Int       @id @default(autoincrement())
-  name      String    @unique
+  userId    Int?
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
   color     String
   icon      String
   expenses  Expense[]
   budgets   Budget[]
   createdAt DateTime  @default(now())
+
+  @@unique([userId, name])
 }
 
 model Expense {
   id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   title      String
   amount     Decimal  @db.Decimal(10, 2)
   categoryId Int
@@ -30,17 +36,24 @@ model Expense {
 
 model Budget {
   id         Int      @id @default(autoincrement())
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
   limit      Decimal  @db.Decimal(10, 2)
   month      String
 
-  @@unique([categoryId, month])
+  @@unique([userId, categoryId, month])
 }
 
 model MonthlyBudget {
-  month String  @id
-  limit Decimal @db.Decimal(10, 2)
+  id     Int     @id @default(autoincrement())
+  userId Int
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  month  String
+  limit  Decimal @db.Decimal(10, 2)
+
+  @@unique([userId, month])
 }
 
 enum Role {
@@ -49,14 +62,18 @@ enum Role {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  firstName    String
-  lastName     String
-  username     String   @unique
-  email        String   @unique
-  phone        String?
-  passwordHash String
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             Int             @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  username       String          @unique
+  email          String          @unique
+  phone          String?
+  passwordHash   String
+  role           Role            @default(USER)
+  expenses       Expense[]
+  budgets        Budget[]
+  monthlyBudgets MonthlyBudget[]
+  categories     Category[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
 }

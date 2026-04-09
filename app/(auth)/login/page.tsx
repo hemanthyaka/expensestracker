@@ -73,9 +73,29 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-fit mt-1" disabled={login.isPending}>
-            {login.isPending ? <><Loader2 size={13} className="animate-spin" /> Signing in…</> : 'Sign in'}
-          </Button>
+          <button
+            type="submit"
+            disabled={login.isPending}
+            className="relative w-fit mt-1 px-5 py-2.5 rounded-[5px] text-sm font-semibold text-white overflow-hidden
+              bg-gradient-to-r from-violet to-violet-dim
+              disabled:cursor-not-allowed transition-all duration-300
+              hover:shadow-[0_0_20px_#8b5cf640] hover:scale-[1.02] active:scale-[0.98]
+              disabled:hover:scale-100 disabled:hover:shadow-none"
+          >
+            {/* shimmer sweep when loading */}
+            {login.isPending && (
+              <span className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_ease-in-out_infinite]
+                bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            )}
+            <span className={`flex items-center gap-2 transition-all duration-200 ${login.isPending ? 'opacity-80' : 'opacity-100'}`}>
+              {login.isPending ? (
+                <>
+                  <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin flex-shrink-0" />
+                  Signing in…
+                </>
+              ) : 'Sign in'}
+            </span>
+          </button>
         </form>
 
         <p className="text-left text-xs text-ink-3 font-sans mt-5">
