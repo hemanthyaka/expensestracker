@@ -7,7 +7,7 @@ export type BudgetRow = { category: Category; limit: number | null; spent: numbe
 export function useBudget(month: string) {
   return useQuery<BudgetRow[]>({
     queryKey: ['budget', month],
-    queryFn:  () => fetch(`/api/budget?month=${month}`).then((r) => r.json()),
+    queryFn:  () => fetch(`/api/budget?month=${month}`).then((r) => r.json()).then((d) => Array.isArray(d) ? d : []),
   })
 }
 

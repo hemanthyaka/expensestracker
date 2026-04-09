@@ -1,10 +1,16 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextResponse }       from 'next/server'
+import { prisma }             from '@/lib/prisma'
+import { getUserFromHeaders } from '@/lib/auth'
 
 export async function GET(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month') ?? new Date().toISOString().slice(0, 7)
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))
+      return NextResponse.json({ error: 'Invalid month format' }, { status: 400 })
     const [year, mon] = month.split('-').map(Number)
 
     const startOfMonth     = new Date(year, mon - 1, 1)
@@ -12,11 +18,13 @@ export async function GET(request: Request) {
     const startOfLastMonth = new Date(year, mon - 2, 1)
     const endOfLastMonth   = new Date(year, mon - 1, 1)
 
+    const uid = user.userId
+
     const [thisMonthAgg, lastMonthAgg, totalAgg, monthlyBudget] = await Promise.all([
-      prisma.expense.aggregate({ where: { date: { gte: startOfMonth, lt: endOfMonth } }, _sum: { amount: true } }),
-      prisma.expense.aggregate({ where: { date: { gte: startOfLastMonth, lt: endOfLastMonth } }, _sum: { amount: true } }),
-      prisma.expense.aggregate({ _sum: { amount: true } }),
-      prisma.monthlyBudget.findUnique({ where: { month } }),
+      prisma.expense.aggregate({ where: { userId: uid, date: { gte: startOfMonth, lt: endOfMonth } }, _sum: { amount: true } }),
+      prisma.expense.aggregate({ where: { userId: uid, date: { gte: startOfLastMonth, lt: endOfLastMonth } }, _sum: { amount: true } }),
+      prisma.expense.aggregate({ where: { userId: uid }, _sum: { amount: true } }),
+      prisma.monthlyBudget.findUnique({ where: { userId_month: { userId: uid, month } } }),
     ])
 
     const thisMonth  = Number(thisMonthAgg._sum.amount ?? 0)
@@ -27,17 +35,15 @@ export async function GET(request: Request) {
     let remainingBudget = 0
 
     if (monthlyBudget) {
-      // Use the total monthly budget if set
       totalBudget     = Number(monthlyBudget.limit)
       remainingBudget = Math.max(0, totalBudget - thisMonth)
     } else {
-      // Fall back to sum of per-category budgets
-      const budgets = await prisma.budget.findMany({ where: { month } })
+      const budgets = await prisma.budget.findMany({ where: { userId: uid, month } })
       totalBudget   = budgets.reduce((acc, b) => acc + Number(b.limit), 0)
       if (budgets.length > 0) {
         const categorySpend = await prisma.expense.groupBy({
           by: ['categoryId'],
-          where: { date: { gte: startOfMonth, lt: endOfMonth } },
+          where: { userId: uid, date: { gte: startOfMonth, lt: endOfMonth } },
           _sum: { amount: true },
         })
         const spendMap = Object.fromEntries(categorySpend.map((s) => [s.categoryId, Number(s._sum.amount ?? 0)]))
@@ -48,12 +54,11 @@ export async function GET(request: Request) {
       }
     }
 
-    const saved            = remainingBudget
-    const thisMonthVsLast  = lastMonth === 0 ? 0 : Math.round(((thisMonth - lastMonth) / lastMonth) * 100)
+    const thisMonthVsLast = lastMonth === 0 ? 0 : Math.round(((thisMonth - lastMonth) / lastMonth) * 100)
 
     return NextResponse.json({
       totalSpent, remainingBudget, totalBudget,
-      thisMonth, lastMonth, saved,
+      thisMonth, lastMonth, saved: remainingBudget,
       thisMonthVsLast, month,
       hasMonthlyBudget: !!monthlyBudget,
     })

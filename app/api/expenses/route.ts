@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextResponse }        from 'next/server'
+import { prisma }              from '@/lib/prisma'
+import { getUserFromHeaders }  from '@/lib/auth'
 
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
 
 export async function GET(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { searchParams } = new URL(request.url)
     const category = searchParams.get('category')
@@ -13,7 +17,7 @@ export async function GET(request: Request) {
     const page     = Math.max(1, parseInt(searchParams.get('page') ?? '1') || 1)
     const limit    = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') ?? '10') || 10))
 
-    const where: Record<string, unknown> = {}
+    const where: Record<string, unknown> = { userId: user.userId }
     if (category) where.category = { name: category }
     if (month) {
       if (!MONTH_RE.test(month))
@@ -53,6 +57,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const body = await request.json()
     const { title, amount, categoryId, date, note } = body
@@ -72,18 +79,19 @@ export async function POST(request: Request) {
 
     const expense = await prisma.expense.create({
       data: {
-        title: title.trim(),
+        userId: user.userId,
+        title:  title.trim(),
         amount,
         categoryId: parseInt(String(categoryId)),
-        date: parsed,
-        note: note && typeof note === 'string' ? note.trim().slice(0, 500) || null : null,
+        date:   parsed,
+        note:   note && typeof note === 'string' ? note.trim().slice(0, 500) || null : null,
       },
       include: { category: true },
     })
     return NextResponse.json({
       ...expense,
-      amount: Number(expense.amount),
-      date: expense.date.toISOString(),
+      amount:    Number(expense.amount),
+      date:      expense.date.toISOString(),
       createdAt: expense.createdAt.toISOString(),
     }, { status: 201 })
   } catch {

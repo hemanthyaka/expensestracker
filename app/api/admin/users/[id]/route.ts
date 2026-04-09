@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma }       from '@/lib/prisma'
-import { getSession }   from '@/lib/auth'
+import { getUserFromHeaders } from '@/lib/auth'
 import { hashPassword, SAFE_USER_SELECT } from '@/lib/auth.server'
 import { UpdateUserSchema } from '@/lib/validations/auth'
 
-async function requireAdmin(request: Request) {
-  const session = await getSession(request)
-  if (!session || session.role !== 'ADMIN') return null
-  return session
+function requireAdmin(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user || user.role !== 'ADMIN') return null
+  return user
 }
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {

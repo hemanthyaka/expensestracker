@@ -43,10 +43,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  const response = NextResponse.next()
-  response.headers.set('x-user-id',   String(session.userId))
-  response.headers.set('x-user-role', session.role)
-  return response
+  // Strip any client-supplied identity headers before setting verified ones
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.delete('x-user-id')
+  requestHeaders.delete('x-user-role')
+  requestHeaders.set('x-user-id',   String(session.userId))
+  requestHeaders.set('x-user-role', session.role)
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {

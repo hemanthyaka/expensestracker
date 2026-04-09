@@ -1,20 +1,26 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextResponse }       from 'next/server'
+import { prisma }             from '@/lib/prisma'
+import { getUserFromHeaders } from '@/lib/auth'
 
 export async function GET(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month') ?? new Date().toISOString().slice(0, 7)
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month))
+      return NextResponse.json({ error: 'Invalid month format' }, { status: 400 })
     const [year, mon] = month.split('-').map(Number)
     const startOfMonth = new Date(year, mon - 1, 1)
     const endOfMonth   = new Date(year, mon, 1)
 
     const [categories, budgets, spending] = await Promise.all([
       prisma.category.findMany({ orderBy: { name: 'asc' } }),
-      prisma.budget.findMany({ where: { month } }),
+      prisma.budget.findMany({ where: { userId: user.userId, month } }),
       prisma.expense.groupBy({
         by: ['categoryId'],
-        where: { date: { gte: startOfMonth, lt: endOfMonth } },
+        where: { userId: user.userId, date: { gte: startOfMonth, lt: endOfMonth } },
         _sum: { amount: true },
       }),
     ])

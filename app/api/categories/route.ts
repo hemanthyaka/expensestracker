@@ -1,11 +1,19 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextResponse }       from 'next/server'
+import { prisma }             from '@/lib/prisma'
+import { getUserFromHeaders } from '@/lib/auth'
 
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/
 
-export async function GET() {
+export async function GET(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
-    const categories = await prisma.category.findMany({ orderBy: { name: 'asc' } })
+    // Admins see all; users see default (userId=null) + their own
+    const where = user.role === 'ADMIN'
+      ? {}
+      : { OR: [{ userId: null }, { userId: user.userId }] }
+    const categories = await prisma.category.findMany({ where, orderBy: { name: 'asc' } })
     return NextResponse.json(categories)
   } catch {
     return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 })
@@ -13,6 +21,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { name, color, icon } = await request.json()
     if (!name || typeof name !== 'string' || name.trim().length === 0 || name.length > 50)
@@ -22,7 +33,9 @@ export async function POST(request: Request) {
     if (!icon || typeof icon !== 'string' || icon.trim().length === 0 || icon.length > 50)
       return NextResponse.json({ error: 'icon is required (max 50 chars)' }, { status: 400 })
 
-    const category = await prisma.category.create({ data: { name: name.trim(), color, icon: icon.trim() } })
+    const category = await prisma.category.create({
+      data: { userId: user.userId, name: name.trim(), color, icon: icon.trim() },
+    })
     return NextResponse.json(category, { status: 201 })
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : 'Failed to create category'

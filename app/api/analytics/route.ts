@@ -1,8 +1,12 @@
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
+import { NextResponse }       from 'next/server'
+import { prisma }             from '@/lib/prisma'
+import { getUserFromHeaders } from '@/lib/auth'
+import { Prisma }             from '@prisma/client'
 
 export async function GET(request: Request) {
+  const user = getUserFromHeaders(request)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   try {
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month') ?? new Date().toISOString().slice(0, 7)
@@ -11,6 +15,7 @@ export async function GET(request: Request) {
     const startOfMonth    = new Date(year, mon - 1, 1)
     const endOfMonth      = new Date(year, mon, 1)
     const twelveMonthsAgo = new Date(year, mon - 13, 1)
+    const uid             = user.userId
 
     const monthlyTotals = await prisma.$queryRaw<Array<{ month: string; total: number }>>(
       Prisma.sql`
@@ -19,6 +24,7 @@ export async function GET(request: Request) {
           CAST(SUM(amount) AS FLOAT)                    AS total
         FROM "Expense"
         WHERE date >= ${twelveMonthsAgo}
+          AND "userId" = ${uid}
         GROUP BY DATE_TRUNC('month', date)
         ORDER BY DATE_TRUNC('month', date) ASC
       `
@@ -26,7 +32,7 @@ export async function GET(request: Request) {
 
     const categorySpend = await prisma.expense.groupBy({
       by: ['categoryId'],
-      where: { date: { gte: startOfMonth, lt: endOfMonth } },
+      where: { userId: uid, date: { gte: startOfMonth, lt: endOfMonth } },
       _sum: { amount: true },
       _count: { id: true },
     })
@@ -45,9 +51,9 @@ export async function GET(request: Request) {
     }))
 
     const topExpenses = await prisma.expense.findMany({
-      where: { date: { gte: startOfMonth, lt: endOfMonth } },
+      where:   { userId: uid, date: { gte: startOfMonth, lt: endOfMonth } },
       orderBy: { amount: 'desc' },
-      take: 10,
+      take:    10,
       include: { category: true },
     })
 
@@ -56,8 +62,8 @@ export async function GET(request: Request) {
       categoryBreakdown,
       topExpenses: topExpenses.map((e) => ({
         ...e,
-        amount: Number(e.amount),
-        date: e.date.toISOString(),
+        amount:    Number(e.amount),
+        date:      e.date.toISOString(),
         createdAt: e.createdAt.toISOString(),
       })),
       month,
