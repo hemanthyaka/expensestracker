@@ -4,12 +4,15 @@ import { getUserFromHeaders } from '@/lib/auth'
 
 const HEX_COLOR_RE = /^#[0-9a-fA-F]{6}$/
 
-async function getOwnedCategory(id: number, userId: number, role: string) {
+async function getCategory(id: number, userId: number, role: string, forEdit = false) {
   const category = await prisma.category.findUnique({ where: { id } })
   if (!category) return { error: 'Not found', status: 404 }
-  // Admins can edit any; users can only edit their own (not default ones)
-  if (role !== 'ADMIN' && category.userId !== userId) return { error: 'Forbidden', status: 403 }
-  if (role !== 'ADMIN' && category.userId === null) return { error: 'Cannot modify default categories', status: 403 }
+  // Only admins or the owning user can access a user-scoped category
+  if (category.userId !== null && category.userId !== userId && role !== 'ADMIN')
+    return { error: 'Forbidden', status: 403 }
+  // For edits (PUT): users cannot rename/recolor default categories
+  if (forEdit && category.userId === null && role !== 'ADMIN')
+    return { error: 'Cannot edit default categories', status: 403 }
   return { category }
 }
 
@@ -22,7 +25,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     if (isNaN(id) || id <= 0)
       return NextResponse.json({ error: 'Invalid category id' }, { status: 400 })
 
-    const check = await getOwnedCategory(id, user.userId, user.role)
+    const check = await getCategory(id, user.userId, user.role, true)
     if ('error' in check) return NextResponse.json({ error: check.error }, { status: check.status })
 
     const { name, color, icon } = await request.json()
@@ -56,7 +59,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     if (isNaN(id) || id <= 0)
       return NextResponse.json({ error: 'Invalid category id' }, { status: 400 })
 
-    const check = await getOwnedCategory(id, user.userId, user.role)
+    const check = await getCategory(id, user.userId, user.role)
     if ('error' in check) return NextResponse.json({ error: check.error }, { status: check.status })
 
     const count = await prisma.expense.count({ where: { categoryId: id } })

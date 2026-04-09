@@ -67,10 +67,11 @@ export function SpendingBarChart({ month }: { month: string }) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#1c1c30" vertical={false} />
-              <XAxis dataKey="month" tick={{ fill: '#3d4460', fontSize: 11, fontFamily: 'Lexend' }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="month" tick={{ fill: '#3d4460', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#3d4460', fontSize: 10, fontFamily: 'IBM Plex Mono' }} axisLine={false} tickLine={false} tickFormatter={fmt} width={54} />
               <Tooltip
-                contentStyle={{ background: '#10101e', border: '1px solid #252540', borderRadius: '12px', color: '#f1f5f9', fontSize: 12, fontFamily: 'Lexend' }}
+                contentStyle={{ background: '#10101e', border: '1px solid #252540', borderRadius: '12px', color: '#f1f5f9', fontSize: 12 }}
+                itemStyle={{ color: '#f1f5f9', fontSize: 12 }}
                 formatter={(v: unknown) => [fmt(Number(v)), 'Spent']}
                 cursor={{ fill: '#8b5cf608' }}
               />

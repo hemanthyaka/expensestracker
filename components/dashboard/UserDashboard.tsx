@@ -40,33 +40,37 @@ export function UserDashboard() {
 
   return (
     <div className="flex flex-col h-full page-enter">
-      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-7 py-4 flex items-center justify-between">
-        <div>
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-4 sm:px-7 py-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
           <h1 className="text-lg font-bold font-display text-ink tracking-tight">Dashboard</h1>
           <p className="text-xs text-ink-3 font-sans mt-0.5">
             {format(new Date(month + '-02'), 'MMMM yyyy')} · {data?.total ?? 0} transactions
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-40">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="w-36 sm:w-40">
             <Select value={month} onValueChange={setMonth} options={monthOptions()} />
           </div>
-          <Button variant="ghost" size="sm" onClick={handleExport}>
+          <Button variant="ghost" size="sm" onClick={handleExport} className="hidden sm:inline-flex">
             <Download size={13} /> Export CSV
           </Button>
           <Button size="sm" onClick={() => setShowForm(true)}>
-            <Plus size={13} /> Add Expense
+            <Plus size={13} /> <span className="hidden sm:inline">Add Expense</span><span className="sm:hidden">Add</span>
           </Button>
         </div>
       </div>
-      <div className="flex-1 p-7 flex flex-col gap-5">
+
+      {/* Body */}
+      <div className="flex-1 p-4 sm:p-7 flex flex-col gap-5">
         <StatsCards month={month} />
-        <div className="grid grid-cols-[2fr_1fr] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5">
           <SpendingBarChart month={month} />
           <CategoryDonut month={month} />
         </div>
         <RecentExpenses month={month} />
       </div>
+
       <ExpenseForm open={showForm} onOpenChange={setShowForm} />
     </div>
   )

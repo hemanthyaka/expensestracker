@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Zap, Eye, EyeOff, Loader2 } from 'lucide-react'
-import { Button }   from '@/components/ui/Button'
+import { Zap, Eye, EyeOff } from 'lucide-react'
 import { Input }    from '@/components/ui/Input'
 import { useLogin } from '@/lib/hooks/useAuth'
 

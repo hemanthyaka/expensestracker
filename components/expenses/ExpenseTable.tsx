@@ -26,11 +26,11 @@ function fmt(n: number) { return new Intl.NumberFormat('en-IN', { style: 'curren
 
 function amountColor(categoryId: number, budgetMap: Record<number, { limit: number | null; spent: number }>) {
   const row = budgetMap[categoryId]
-  if (!row || row.limit == null) return '#f43f5e' // no limit → rose
+  if (!row || row.limit == null) return '#f43f5e'
   const pct = (row.spent / row.limit) * 100
-  if (pct >= 90) return '#f43f5e'  // red — over/near limit
-  if (pct >= 70) return '#f59e0b'  // amber — approaching
-  return '#10b981'                  // green — healthy
+  if (pct >= 90) return '#f43f5e'
+  if (pct >= 70) return '#f59e0b'
+  return '#10b981'
 }
 
 export function ExpenseTable({ filters }: { filters: ExpenseFilters }) {
@@ -41,7 +41,6 @@ export function ExpenseTable({ filters }: { filters: ExpenseFilters }) {
   const { data: budgetRows = [] } = useBudget(filters.month ?? format(new Date(), 'yyyy-MM'))
   const deleteMutation      = useDeleteExpense()
 
-  // Build categoryId → { limit, spent } map
   const budgetMap: Record<number, { limit: number | null; spent: number }> = {}
   for (const r of budgetRows) budgetMap[r.category.id] = { limit: r.limit, spent: r.spent }
 
@@ -49,10 +48,10 @@ export function ExpenseTable({ filters }: { filters: ExpenseFilters }) {
     <Card>
       <div className="divide-y divide-rim/50">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-4 px-5 py-4 animate-pulse">
-            <div className="w-9 h-9 rounded-xl bg-groove/50" />
+          <div key={i} className="flex items-center gap-4 px-4 sm:px-5 py-4 animate-pulse">
+            <div className="w-9 h-9 rounded-xl bg-groove/50 flex-shrink-0" />
             <div className="flex-1 space-y-1.5"><div className="h-3 bg-groove/50 rounded w-36" /><div className="h-2.5 bg-groove/30 rounded w-22" /></div>
-            <div className="h-3 bg-groove/50 rounded w-20" /><div className="h-3 bg-groove/50 rounded w-16" />
+            <div className="h-3 bg-groove/50 rounded w-16" />
           </div>
         ))}
       </div>
@@ -71,37 +70,61 @@ export function ExpenseTable({ filters }: { filters: ExpenseFilters }) {
   return (
     <>
       <Card>
-        <div className="grid grid-cols-[2fr_1fr_1fr_1fr_76px] px-5 py-3 border-b border-rim">
-          {['Description', 'Category', 'Date', 'Amount', ''].map((h, i) => (
-            <p key={i} className="text-[10px] font-bold text-ink-4 uppercase tracking-widest font-display last:text-right">{h}</p>
-          ))}
-        </div>
-
-        <div className="divide-y divide-rim/30">
-          {data.expenses.map((e) => (
-            <div key={e.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_76px] px-5 py-3.5 items-center hover:bg-[#0e0e1c] transition-colors">
-              <div className="flex items-center gap-3 min-w-0">
-                <CatIcon icon={e.category.icon} color={e.category.color} />
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-ink truncate font-sans">{e.title}</p>
-                  {e.note && <p className="text-[11px] text-ink-3 truncate font-sans">{e.note}</p>}
+        {/* Desktop table */}
+        <div className="hidden sm:block">
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_76px] px-5 py-3 border-b border-rim">
+            {['Description', 'Category', 'Date', 'Amount', ''].map((h, i) => (
+              <p key={i} className="text-[10px] font-bold text-ink-4 uppercase tracking-widest font-display last:text-right">{h}</p>
+            ))}
+          </div>
+          <div className="divide-y divide-rim/30">
+            {data.expenses.map((e) => (
+              <div key={e.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_76px] px-5 py-3.5 items-center hover:bg-[#0e0e1c] transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <CatIcon icon={e.category.icon} color={e.category.color} />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-ink truncate font-sans">{e.title}</p>
+                    {e.note && <p className="text-[11px] text-ink-3 truncate font-sans">{e.note}</p>}
+                  </div>
+                </div>
+                <Badge label={e.category.name} color={e.category.color} />
+                <p className="text-[12px] text-ink-2 font-sans">{format(new Date(e.date), 'MMM d, yyyy')}</p>
+                <p className="num text-sm font-semibold" style={{ color: amountColor(e.categoryId, budgetMap) }}>
+                  {fmt(e.amount)}
+                </p>
+                <div className="flex justify-end gap-1.5">
+                  <button onClick={() => setEdit(e)} className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-ink hover:bg-canvas transition-colors"><Pencil size={11} /></button>
+                  <button onClick={() => setDel(e)}  className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-rose hover:border-rose/30 transition-colors"><Trash2 size={11} /></button>
                 </div>
               </div>
-              <Badge label={e.category.name} color={e.category.color} />
-              <p className="text-[12px] text-ink-2 font-sans">{format(new Date(e.date), 'MMM d, yyyy')}</p>
-              <p className="num text-sm font-semibold" style={{ color: amountColor(e.categoryId, budgetMap) }}>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile card list */}
+        <div className="sm:hidden divide-y divide-rim/30">
+          {data.expenses.map((e) => (
+            <div key={e.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-[#0e0e1c] transition-colors">
+              <CatIcon icon={e.category.icon} color={e.category.color} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-ink truncate font-sans">{e.title}</p>
+                <p className="text-[11px] text-ink-3 font-sans mt-0.5">
+                  {e.category.name} · {format(new Date(e.date), 'MMM d')}
+                </p>
+              </div>
+              <p className="num text-sm font-semibold flex-shrink-0" style={{ color: amountColor(e.categoryId, budgetMap) }}>
                 {fmt(e.amount)}
               </p>
-              <div className="flex justify-end gap-1.5">
-                <button onClick={() => setEdit(e)} className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-ink hover:bg-canvas transition-colors"><Pencil size={11} /></button>
-                <button onClick={() => setDel(e)}  className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-rose hover:border-rose/30 transition-colors"><Trash2 size={11} /></button>
+              <div className="flex gap-1 flex-shrink-0">
+                <button onClick={() => setEdit(e)} className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-ink transition-colors"><Pencil size={11} /></button>
+                <button onClick={() => setDel(e)}  className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-rose transition-colors"><Trash2 size={11} /></button>
               </div>
             </div>
           ))}
         </div>
 
         {data.pageCount > 1 && (
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-rim">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-t border-rim">
             <p className="text-xs text-ink-3 font-sans">
               {(page - 1) * 10 + 1}–{Math.min(page * 10, data.total)} of {data.total}
             </p>

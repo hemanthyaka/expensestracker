@@ -149,7 +149,7 @@ export function StatsCards({ month }: { month: string }) {
   const { data, isLoading } = useStats(month)
 
   if (isLoading) return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       {['0s', '0.05s', '0.1s', '0.15s'].map((d) => <SkeletonCard key={d} delay={d} />)}
     </div>
   )
@@ -157,7 +157,7 @@ export function StatsCards({ month }: { month: string }) {
   if (!data) return null
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <StatCard
         label="Total Spent"
         value={fmt(data.totalSpent)}

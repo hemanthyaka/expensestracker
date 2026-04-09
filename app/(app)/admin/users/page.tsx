@@ -65,15 +65,15 @@ function UserFormDialog({ open, onOpenChange, user }: {
           <Input label="First Name" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} error={errors.firstName} />
           <Input label="Last Name"  value={form.lastName}  onChange={(e) => set('lastName',  e.target.value)} error={errors.lastName} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input label="Username" value={form.username} onChange={(e) => set('username', e.target.value)} error={errors.username} />
           <Input label="Email" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} error={errors.email} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input label="Phone (optional)" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
           <Select label="Role" value={form.role} onValueChange={(v) => set('role', v)} options={ROLE_OPTIONS} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Input label={isEdit ? 'New Password (optional)' : 'Password'} type="password" value={form.password} onChange={(e) => set('password', e.target.value)} error={errors.password} />
           <Input label="Confirm Password" type="password" value={form.confirmPassword} onChange={(e) => set('confirmPassword', e.target.value)} error={errors.confirmPassword} />
         </div>
@@ -97,8 +97,8 @@ export default function AdminUsersPage() {
 
   return (
     <div className="flex flex-col h-full page-enter">
-      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-7 py-4 flex items-center justify-between">
-        <div>
+      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-4 sm:px-7 py-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-lg font-bold font-display text-ink tracking-tight">Users</h1>
           <p className="text-xs text-ink-3 font-sans mt-0.5">{users.length} registered users</p>
         </div>
@@ -107,7 +107,7 @@ export default function AdminUsersPage() {
         </Button>
       </div>
 
-      <div className="flex-1 p-7 flex flex-col gap-5">
+      <div className="flex-1 p-4 sm:p-7 flex flex-col gap-5">
         {/* Search */}
         <div className="relative max-w-sm">
           <Search size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-4" />
@@ -115,9 +115,9 @@ export default function AdminUsersPage() {
             className="w-full bg-card border border-rim rounded-xl pl-9 pr-3 py-2.5 text-sm text-ink placeholder:text-ink-4 font-sans focus:outline-none focus:border-violet transition-colors" />
         </div>
 
-        {/* Table */}
+        {/* Desktop table */}
         <Card>
-          <div className="grid grid-cols-[2fr_1fr_1.5fr_1fr_100px] px-5 py-3 border-b border-rim">
+          <div className="hidden sm:grid grid-cols-[2fr_1fr_1.5fr_1fr_100px] px-5 py-3 border-b border-rim">
             {['User', 'Username', 'Email', 'Role', ''].map((h, i) => (
               <p key={i} className="text-[10px] font-bold text-ink-4 uppercase tracking-widest font-display last:text-right">{h}</p>
             ))}
@@ -126,11 +126,13 @@ export default function AdminUsersPage() {
           {isLoading ? (
             <div className="divide-y divide-rim/30">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="grid grid-cols-[2fr_1fr_1.5fr_1fr_100px] px-5 py-4 animate-pulse gap-4">
-                  <div className="flex items-center gap-3"><div className="w-8 h-8 rounded-xl bg-groove/50" /><div className="h-3 bg-groove/50 rounded w-28" /></div>
-                  <div className="h-3 bg-groove/30 rounded w-20 self-center" />
-                  <div className="h-3 bg-groove/30 rounded w-32 self-center" />
-                  <div className="h-5 bg-groove/30 rounded-full w-16 self-center" />
+                <div key={i} className="flex items-center gap-3 px-4 sm:px-5 py-4 animate-pulse">
+                  <div className="w-8 h-8 rounded-xl bg-groove/50 flex-shrink-0" />
+                  <div className="flex-1 space-y-1.5">
+                    <div className="h-3 bg-groove/50 rounded w-28" />
+                    <div className="h-2.5 bg-groove/30 rounded w-20" />
+                  </div>
+                  <div className="h-5 bg-groove/30 rounded-full w-14 flex-shrink-0" />
                 </div>
               ))}
             </div>
@@ -139,35 +141,67 @@ export default function AdminUsersPage() {
           ) : (
             <div className="divide-y divide-rim/30">
               {users.map((u) => (
-                <div key={u.id} className="grid grid-cols-[2fr_1fr_1.5fr_1fr_100px] px-5 py-3.5 items-center hover:bg-[#0e0e1c] transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-violet/15 border border-violet/20 flex items-center justify-center text-[11px] font-bold text-violet-light font-display flex-shrink-0">
+                <div key={u.id}>
+                  {/* Desktop row */}
+                  <div className="hidden sm:grid grid-cols-[2fr_1fr_1.5fr_1fr_100px] px-5 py-3.5 items-center hover:bg-[#0e0e1c] transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-violet/15 border border-violet/20 flex items-center justify-center text-[11px] font-bold text-violet-light font-display flex-shrink-0">
+                        {u.firstName[0]}{u.lastName[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-ink font-sans">{u.firstName} {u.lastName}</p>
+                        <p className="text-[10px] text-ink-4 font-sans">{format(new Date(u.createdAt), 'MMM d, yyyy')}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-ink-3 font-mono">@{u.username}</p>
+                    <p className="text-xs text-ink-2 font-sans truncate">{u.email}</p>
+                    <div>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium font-sans ${u.role === 'ADMIN' ? 'bg-violet/15 text-violet-light' : 'bg-groove/50 text-ink-3'}`}>
+                        {u.role === 'ADMIN' ? <Shield size={9} /> : <UserIcon size={9} />}
+                        {u.role}
+                      </span>
+                    </div>
+                    <div className="flex justify-end gap-1.5">
+                      <button onClick={() => { setEditUser(u); setShowForm(true) }}
+                        className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-ink hover:bg-canvas transition-colors">
+                        <Pencil size={11} />
+                      </button>
+                      {u.id !== me?.id && (
+                        <button onClick={() => setDelUser(u)}
+                          className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-rose hover:border-rose/30 transition-colors">
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Mobile row */}
+                  <div className="sm:hidden flex items-center gap-3 px-4 py-3.5 hover:bg-[#0e0e1c] transition-colors">
+                    <div className="w-9 h-9 rounded-xl bg-violet/15 border border-violet/20 flex items-center justify-center text-[11px] font-bold text-violet-light font-display flex-shrink-0">
                       {u.firstName[0]}{u.lastName[0]}
                     </div>
-                    <div>
-                      <p className="text-sm font-medium text-ink font-sans">{u.firstName} {u.lastName}</p>
-                      <p className="text-[10px] text-ink-4 font-sans">{format(new Date(u.createdAt), 'MMM d, yyyy')}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-ink font-sans truncate">{u.firstName} {u.lastName}</p>
+                        <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium font-sans flex-shrink-0 ${u.role === 'ADMIN' ? 'bg-violet/15 text-violet-light' : 'bg-groove/50 text-ink-3'}`}>
+                          {u.role === 'ADMIN' ? <Shield size={8} /> : <UserIcon size={8} />}
+                          {u.role}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-ink-3 font-sans truncate">{u.email}</p>
                     </div>
-                  </div>
-                  <p className="text-xs text-ink-3 font-mono">@{u.username}</p>
-                  <p className="text-xs text-ink-2 font-sans truncate">{u.email}</p>
-                  <div>
-                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium font-sans ${u.role === 'ADMIN' ? 'bg-violet/15 text-violet-light' : 'bg-groove/50 text-ink-3'}`}>
-                      {u.role === 'ADMIN' ? <Shield size={9} /> : <UserIcon size={9} />}
-                      {u.role}
-                    </span>
-                  </div>
-                  <div className="flex justify-end gap-1.5">
-                    <button onClick={() => { setEditUser(u); setShowForm(true) }}
-                      className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-ink hover:bg-canvas transition-colors">
-                      <Pencil size={11} />
-                    </button>
-                    {u.id !== me?.id && (
-                      <button onClick={() => setDelUser(u)}
-                        className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-rose hover:border-rose/30 transition-colors">
-                        <Trash2 size={11} />
+                    <div className="flex gap-1 flex-shrink-0">
+                      <button onClick={() => { setEditUser(u); setShowForm(true) }}
+                        className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-ink transition-colors">
+                        <Pencil size={11} />
                       </button>
-                    )}
+                      {u.id !== me?.id && (
+                        <button onClick={() => setDelUser(u)}
+                          className="w-7 h-7 rounded-lg border border-rim flex items-center justify-center text-ink-3 hover:text-rose transition-colors">
+                          <Trash2 size={11} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

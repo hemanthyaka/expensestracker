@@ -59,7 +59,7 @@ export function RecentExpenses({ month }: { month: string }) {
       ) : (
         <div className="divide-y divide-rim/50">
           {data.expenses.map((e) => (
-            <div key={e.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-[#0e0e1c] transition-colors">
+            <div key={e.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-groove/20 transition-colors">
               <CatIcon icon={e.category.icon} color={e.category.color} />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-ink truncate font-sans">{e.title}</p>

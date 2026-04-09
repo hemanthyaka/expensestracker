@@ -97,19 +97,19 @@ export default function BudgetPage() {
 
   return (
     <div className="flex flex-col h-full page-enter">
-      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-7 py-4 flex items-center justify-between">
-        <div>
+      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-4 sm:px-7 py-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-lg font-bold font-display text-ink tracking-tight">Budget</h1>
-          <p className="text-xs text-ink-3 font-sans mt-0.5">Set monthly budget and manage category limits</p>
+          <p className="text-xs text-ink-3 font-sans mt-0.5 hidden sm:block">Set monthly budget and manage category limits</p>
         </div>
-        <div className="w-44"><Select value={month} onValueChange={setMonth} options={monthOptions()} /></div>
+        <div className="w-36 sm:w-44 flex-shrink-0"><Select value={month} onValueChange={setMonth} options={monthOptions()} /></div>
       </div>
 
-      <div className="flex-1 p-7">
+      <div className="flex-1 p-4 sm:p-7">
         <MonthlyBudgetBar month={month} rows={rows} />
 
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i}>
                 <div className="p-5 space-y-3 animate-pulse">
@@ -126,7 +126,7 @@ export default function BudgetPage() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {rows.map((row) => <BudgetCard key={row.category.id} row={row} onEdit={setEditRow} />)}
           </div>
         )}

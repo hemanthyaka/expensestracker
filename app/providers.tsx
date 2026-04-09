@@ -29,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             background:   '#10101e',
             border:       '1px solid #252540',
             color:        '#f1f5f9',
-            fontFamily:   "'DM Sans', sans-serif",
+            fontFamily:   "'Lexend', sans-serif",
             fontSize:     '13px',
           },
         }}

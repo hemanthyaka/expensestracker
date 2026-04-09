@@ -59,7 +59,7 @@ function SkeletonCard() {
 }
 
 export function AdminDashboard() {
-  const { data: user }  = useCurrentUser()
+  const { data: user }      = useCurrentUser()
   const { data, isLoading } = useAdminStats()
 
   const chartData = (data?.monthlySignups ?? []).map((m) => ({
@@ -70,7 +70,7 @@ export function AdminDashboard() {
   return (
     <div className="flex flex-col h-full page-enter">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-7 py-4 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-base/80 backdrop-blur-xl border-b border-rim px-4 sm:px-7 py-4 flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-lg font-bold font-display text-ink tracking-tight">Admin Dashboard</h1>
           <p className="text-xs text-ink-3 font-sans mt-0.5">
@@ -79,32 +79,32 @@ export function AdminDashboard() {
         </div>
         <Link href="/admin/users">
           <button className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-violet/10 border border-violet/20 text-violet-light text-xs font-medium font-sans hover:bg-violet/15 transition-colors">
-            <Users size={13} /> Manage Users <ArrowRight size={11} />
+            <Users size={13} /> <span className="hidden sm:inline">Manage Users</span><span className="sm:hidden">Users</span> <ArrowRight size={11} />
           </button>
         </Link>
       </div>
 
-      <div className="flex-1 p-7 flex flex-col gap-6">
+      <div className="flex-1 p-4 sm:p-7 flex flex-col gap-6">
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
           ) : (
             <>
-              <StatCard label="Total Users"   value={data!.total}        icon={Users}    accent="#8b5cf6" delay="0s" />
-              <StatCard label="Admin Accounts" value={data!.admins}      icon={Shield}   accent="#10b981" delay="0.05s" />
-              <StatCard label="New This Month" value={data!.newThisMonth} icon={UserPlus} accent="#38bdf8" delay="0.1s"
+              <StatCard label="Total Users"    value={data!.total}         icon={Users}    accent="#8b5cf6" delay="0s" />
+              <StatCard label="Admin Accounts" value={data!.admins}        icon={Shield}   accent="#10b981" delay="0.05s" />
+              <StatCard label="New This Month" value={data!.newThisMonth}  icon={UserPlus} accent="#38bdf8" delay="0.1s"
                 sub={data!.newLastMonth > 0
                   ? `${Math.abs(data!.growthPct)}% ${data!.growthPct >= 0 ? 'more' : 'less'} than last month`
                   : `${data!.newLastMonth} last month`}
                 subUp={data!.growthPct >= 0}
               />
-              <StatCard label="Regular Users" value={data!.users} icon={Users} accent="#f59e0b" delay="0.15s" />
+              <StatCard label="Regular Users"  value={data!.users}         icon={Users}    accent="#f59e0b" delay="0.15s" />
             </>
           )}
         </div>
 
-        <div className="grid grid-cols-[1.4fr_1fr] gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-5">
           {/* Monthly signups chart */}
           <Card accentColor="#8b5cf6">
             <div className="p-5">

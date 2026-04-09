@@ -2,7 +2,7 @@
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useAnalytics } from '@/lib/hooks/useAnalytics'
-import { Card } from '@/components/ui/Card'
+import { Card }         from '@/components/ui/Card'
 
 function fmt(n: number) {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(n)
