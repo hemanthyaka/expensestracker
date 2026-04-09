@@ -25,6 +25,7 @@ export default function LoginPage() {
         router.push('/dashboard')
       },
       onError: (err: unknown) => {
+        setRedirecting(false)
         const e = err as { error?: string }
         setError(e?.error ?? 'Login failed')
       },
