@@ -11,21 +11,27 @@ import { useLogin } from '@/lib/hooks/useAuth'
 export default function LoginPage() {
   const router = useRouter()
   const login  = useLogin()
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [show, setShow] = useState(false)
-  const [error, setError] = useState('')
+  const [form,        setForm]        = useState({ email: '', password: '' })
+  const [show,        setShow]        = useState(false)
+  const [error,       setError]       = useState('')
+  const [redirecting, setRedirecting] = useState(false)
 
   async function submit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
     login.mutate(form, {
-      onSuccess: () => router.push('/dashboard'),
-      onError:   (err: unknown) => {
+      onSuccess: () => {
+        setRedirecting(true)
+        router.push('/dashboard')
+      },
+      onError: (err: unknown) => {
         const e = err as { error?: string }
         setError(e?.error ?? 'Login failed')
       },
     })
   }
+
+  const isPending = login.isPending || redirecting
 
   return (
     <div className="w-full max-w-sm">
@@ -75,7 +81,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={login.isPending}
+            disabled={isPending}
             className="relative w-fit mt-1 px-5 py-2.5 rounded-[5px] text-sm font-semibold text-white overflow-hidden
               bg-gradient-to-r from-violet to-violet-dim
               disabled:cursor-not-allowed transition-all duration-300
@@ -83,12 +89,12 @@ export default function LoginPage() {
               disabled:hover:scale-100 disabled:hover:shadow-none"
           >
             {/* shimmer sweep when loading */}
-            {login.isPending && (
+            {isPending && (
               <span className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_ease-in-out_infinite]
                 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
             )}
-            <span className={`flex items-center gap-2 transition-all duration-200 ${login.isPending ? 'opacity-80' : 'opacity-100'}`}>
-              {login.isPending ? (
+            <span className={`flex items-center gap-2 transition-all duration-200 ${isPending ? 'opacity-80' : 'opacity-100'}`}>
+              {isPending ? (
                 <>
                   <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin flex-shrink-0" />
                   Signing in…
