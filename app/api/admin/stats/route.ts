@@ -4,7 +4,8 @@ import { getUserFromHeaders } from '@/lib/auth'
 
 export async function GET(request: Request) {
   const session = getUserFromHeaders(request)
-  if (!session || session.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (session.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const now          = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)

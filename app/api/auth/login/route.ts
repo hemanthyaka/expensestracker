@@ -5,9 +5,9 @@ import { verifyPassword, checkRateLimit, clearRateLimit, SAFE_USER_SELECT } from
 import { LoginSchema } from '@/lib/validations/auth'
 
 export async function POST(request: Request) {
-  // Use the last IP in the chain (client IP) — take first entry only to avoid spoofing via prepending
+  // Trusted proxy appends to X-Forwarded-For, so last entry is the real client IP
   const forwarded = request.headers.get('x-forwarded-for')
-  const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown'
+  const ip = forwarded ? forwarded.split(',').at(-1)!.trim() : 'unknown'
 
   const rateCheck = checkRateLimit(ip)
   if (!rateCheck.allowed) {
